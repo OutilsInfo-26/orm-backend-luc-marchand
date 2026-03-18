@@ -1,3 +1,6 @@
+#Les schémas Pydantic sont utilisés pour définir la structure des données d'entrée et de sortie de l'API. 
+# Ils permettent de valider les données reçues et de contrôler la forme des données renvoyées.
+
 from datetime import date
 
 from pydantic import BaseModel, Field

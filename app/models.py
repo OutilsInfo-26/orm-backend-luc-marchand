@@ -1,3 +1,7 @@
+# Les modèles correspondent aux tables de la base de données et sont définis à l'aide de SQLAlchemy ORM.
+# Chaque classe représente une table, et chaque attribut correspond à une colonne.
+# Les relations entre les tables sont définies à l'aide de relationship().
+# On utilise des annotations de type avec Mapped[] pour indiquer le type des champs et des relations.
 from datetime import date
 
 from sqlalchemy import ForeignKey, String
