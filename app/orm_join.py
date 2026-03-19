@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, joinedload
 
 from app.db import get_session
-from app.models import Author, Book, Publisher
-from app.schemas import BookWithAuthor, BookWithAuthorObject, BookWithPublisher
+from app.models import Author, Book, Publisher, Person
+from app.schemas import BookWithAuthor, BookWithAuthorObject, BookWithPublisher, PersonWithBooks, BookFull, PersonWithBooksCount
 
 router = APIRouter(prefix="/orm", tags=["ORM jointure"])
 
@@ -39,6 +39,85 @@ def list_books_with_authors(
         for row in rows
     ]
 
+# Person
+@router.get("/persons-with-books", response_model=list[PersonWithBooks])
+def list_persons_with_books(
+    session: Session = Depends(get_session),
+) -> list[PersonWithBooks]:
+    stmt = (
+        select(
+            Person.first_name,
+            Person.last_name,
+            Book.title,
+        )
+        .join(Person.books)
+    )
+
+    rows = session.execute(stmt).all()
+    return [
+        PersonWithBooks(
+            first_name=row.first_name,
+            last_name=row.last_name,
+            title=row.title,
+        )
+        for row in rows
+    ]
+
+# Retourne chaque personne avec le nombre de livres qu'elle possède
+@router.get("/persons-with-book-count", response_model=list[PersonWithBooksCount])
+def list_persons_with_books(
+    session: Session = Depends(get_session),
+) -> list[PersonWithBooksCount]:
+    stmt = (
+        select(
+            Person.first_name,
+            Person.last_name,
+            func.count(Book.id).label("numberOfBooks")
+        )
+        .join(Person.books)
+        .group_by(Person.first_name, Person.last_name)
+
+    )
+
+    rows = session.execute(stmt).all()
+    return [
+        PersonWithBooksCount(
+            first_name=row.first_name,
+            last_name=row.last_name,
+            numberOfBooks=row.numberOfBooks,
+        )
+        for row in rows
+
+    ]
+
+# books-full
+@router.get("/books-full", response_model=list[BookFull])
+def list_books_full(
+    session: Session = Depends(get_session),
+) -> list[BookFull]:
+    stmt = (
+        select(
+            Book.title,
+            Author.name.label("author_name"),   #On mets un .label pour renommer le champ author_name dans le résultat de la requête. (Comme le "as" en SQL)
+            Publisher.name.label("editor_name"),
+        )
+        .join(Author)
+        .join(Publisher, Book.publisher_id == Publisher.id, isouter=True)
+    )
+
+    # On pourrait aussi utiliser mappings et ** pour éviter de répéter tous les champs de Book :
+    # rows = session.execute(stmt).mappings().all()
+    # return [BookWithAuthor(**row) for row in rows]
+
+    rows = session.execute(stmt).all()
+    return [
+        BookFull(
+            book_name=row.title,
+            author_name=row.author_name,
+            editor_name=row.editor_name,
+        )
+        for row in rows
+    ]
 
 
 @router.get("/books-with-author-object", response_model=list[BookWithAuthorObject])

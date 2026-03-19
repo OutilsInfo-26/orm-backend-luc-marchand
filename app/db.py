@@ -24,7 +24,7 @@ def get_session():
 def init_db() -> None:
     from datetime import date
 
-    from app.models import Base, Author, Book, Tag, BookTag, Publisher
+    from app.models import Base, Author, Book, Tag, BookTag, Publisher, Person
     from sqlalchemy import func, select
 
     Base.metadata.create_all(bind=engine) # Create tables if they don't exist
@@ -33,6 +33,8 @@ def init_db() -> None:
         author_count = session.scalar(select(func.count(Author.id)))
         if author_count:
             return
+
+        print("Initializing database with sample data...")
 
         publishers = [
             Publisher(name="Gallimard"),          # 0
@@ -59,25 +61,43 @@ def init_db() -> None:
         session.add_all(authors)
         session.flush()
 
+        persons = [
+            Person(first_name="Alice", last_name="Smith"),
+            Person(first_name="Bob", last_name="Johnson"),
+            Person(first_name="Charlie", last_name="Brown"),
+            Person(first_name="Diana", last_name="Prince"),
+            Person(first_name="Eve", last_name="Davis"),
+            Person(first_name="Frank", last_name="Wilson"),
+            Person(first_name="Grace", last_name="Hopper"),
+            Person(first_name="Heidi", last_name="Clark"),
+            Person(first_name="Ivan", last_name="Petrov"),
+            Person(first_name="Judy", last_name="Garland"),
+            Person(first_name="Karl", last_name="Marx"),
+            Person(first_name="Leo", last_name="Tolstoy"),
+            Person(first_name="Marcel", last_name="Proust")
+        ]
+        session.add_all(persons)
+        session.commit()
+        
         books = [
             # Informatique
             Book(title="Notes on the Analytical Engine", pages=120, author_id=authors[0].id, publisher_id=publishers[3].id),
-            Book(title="Compilers and Cobol", pages=220, author_id=authors[1].id, publisher_id=publishers[1].id),
-            Book(title="Computing Machinery and Intelligence", pages=90, author_id=authors[2].id, publisher_id=publishers[3].id),
-            Book(title="The Art of Computer Programming Vol. 1", pages=672, author_id=authors[3].id, publisher_id=publishers[1].id),
-            Book(title="The Art of Computer Programming Vol. 2", pages=784, author_id=authors[3].id, publisher_id=publishers[1].id),
-            Book(title="Just for Fun", pages=280, author_id=authors[4].id),
+            Book(title="Compilers and Cobol", pages=220, author_id=authors[1].id, publisher_id=publishers[1].id, owner_id=persons[1].id),
+            Book(title="Computing Machinery and Intelligence", pages=90, author_id=authors[2].id, publisher_id=publishers[3].id, owner_id=persons[3].id),
+            Book(title="The Art of Computer Programming Vol. 1", pages=672, author_id=authors[3].id, publisher_id=publishers[1].id, owner_id=persons[4].id),
+            Book(title="The Art of Computer Programming Vol. 2", pages=784, author_id=authors[3].id, publisher_id=publishers[1].id, owner_id=persons[7].id),
+            Book(title="Just for Fun", pages=280, author_id=authors[4].id, owner_id=persons[1].id),
             # Proust — À la recherche du temps perdu
-            Book(title="Du côté de chez Swann", pages=531, author_id=authors[5].id, publisher_id=publishers[0].id),
-            Book(title="À l'ombre des jeunes filles en fleurs", pages=619, author_id=authors[5].id, publisher_id=publishers[0].id),
-            Book(title="Le Temps retrouvé", pages=524, author_id=authors[5].id, publisher_id=publishers[0].id),
+            Book(title="Du côté de chez Swann", pages=531, author_id=authors[5].id, publisher_id=publishers[0].id, owner_id=persons[8].id),
+            Book(title="À l'ombre des jeunes filles en fleurs", pages=619, author_id=authors[5].id, publisher_id=publishers[0].id, owner_id=persons[2].id),
+            Book(title="Le Temps retrouvé", pages=524, author_id=authors[5].id, publisher_id=publishers[0].id, owner_id=persons[2].id),
             # Tolkien
-            Book(title="The Fellowship of the Ring", pages=423, author_id=authors[6].id, publisher_id=publishers[2].id),
-            Book(title="The Two Towers", pages=352, author_id=authors[6].id, publisher_id=publishers[2].id),
-            Book(title="The Return of the King", pages=416, author_id=authors[6].id, publisher_id=publishers[2].id),
+            Book(title="The Fellowship of the Ring", pages=423, author_id=authors[6].id, publisher_id=publishers[2].id, owner_id=persons[3].id),
+            Book(title="The Two Towers", pages=352, author_id=authors[6].id, publisher_id=publishers[2].id, owner_id=persons[9].id),
+            Book(title="The Return of the King", pages=416, author_id=authors[6].id, publisher_id=publishers[2].id, owner_id=persons[10].id),
             # Autres classiques
-            Book(title="Les Misérables", pages=1900, author_id=authors[7].id, publisher_id=publishers[0].id),
-            Book(title="L'Étranger", pages=186, author_id=authors[8].id, publisher_id=publishers[0].id),
+            Book(title="Les Misérables", pages=1900, author_id=authors[7].id, publisher_id=publishers[0].id, owner_id=persons[8].id),
+            Book(title="L'Étranger", pages=186, author_id=authors[8].id, publisher_id=publishers[0].id, owner_id=persons[4].id),
         ]
         session.add_all(books)
         session.flush()
@@ -133,3 +153,4 @@ def init_db() -> None:
         ]
         session.add_all(book_tags)
         session.commit()
+

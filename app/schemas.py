@@ -63,6 +63,12 @@ class BookWithAuthor(BaseModel):
     pages: int
     author_name: str
 
+class BookFull(BaseModel):
+    book_name: str
+    author_name: str
+    editor_name: str | None
+
+    
 
 # Contrairement à BookWithAuthor, ici author est un objet imbriqué
 # accessible via la navigation ORM (book.author.id, book.author.name)
@@ -95,3 +101,41 @@ class BookWithTags(BaseModel):
     tags: list[TagOut]
 
     model_config = {"from_attributes": True}
+
+
+
+class PersonCreate(BaseModel):
+    first_name: str = Field(..., min_length=2, max_length=50, description="First name of person")
+    last_name: str = Field(..., min_length=2, max_length=50, description="Last name of person")
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {"first_name": "John", "last_name": "Doe"}
+        }
+    }
+
+class PersonUpdate(BaseModel):
+    first_name: str | None = Field(None, min_length=2, max_length=50)
+    last_name: str | None = Field(None, min_length=2, max_length=50)
+
+
+class PersonOut(PersonCreate):
+    id: int
+
+class PersonWithBooks(BaseModel):
+    first_name: str
+    last_name: str
+    title: str
+
+class PersonWithBooksCount(BaseModel):
+    first_name: str
+    last_name: str
+    numberOfBooks: int 
+
+class StatsOut(BaseModel):
+    total_books: int
+    total_authors: int
+    total_tags: int
+    longest_book: str
+    longest_book_pages: int
+    mean_pages: float
